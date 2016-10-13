@@ -17,6 +17,9 @@ import nunjucksModuleLoader from './nunjucks/module-loader';
 
 const expressExtended = express.application;
 
+expressExtended.registerModules = function() {
+  return [];
+}
 
 expressExtended.baseUrl = function(path) {
   return this._CONFIG.basePath+'/'+path.replace(/^\/|\/$/g, '');
@@ -60,10 +63,6 @@ expressExtended.model = function(name) {
 }
 
 expressExtended.load = function load(_ROOT) {
-  if(this.registerModules === undefined) {
-    throw Error("ExpressExtended app must declare registerModules method before boot");
-  }
-
   this._ROOT = _ROOT;
   this._models = [];
   this._modules = [];
@@ -144,7 +143,7 @@ expressExtended._initViews = function() {
       new nunjucksModuleLoader(this._modules, {paths: viewPaths}),
       {
           autoescape: false,
-          throwOnUndefined: true
+          // throwOnUndefined: true
       }
   );
   this._nunjucksEnv.express(this);
@@ -194,7 +193,6 @@ expressExtended._initConfig = function() {
   this._CONFIG = require(p);
   this.set('_CONFIG', this._CONFIG);
   this.set('secret', this._CONFIG.secret);
-  this.set('permissions', require('./permissions'));
 }
 
 expressExtended._initRoutes = function() {
