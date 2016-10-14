@@ -1,6 +1,6 @@
 {
   "name": "express-extended",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "express-extended",
   "main": "lib/index.js",
   "dependencies": {
@@ -33,6 +33,12 @@
   "bin": {
     "express-extended": "./bin/cli.js"
   },
+  "files": [
+    "README.md",
+    "bin/*",
+    "src/*",
+    "lib/*"
+  ],
   "scripts": {
     "test": "./node_modules/.bin/_mocha --reporter spec --recursive",
     "coverage": "./node_modules/.bin/istanbul cover ./node_modules/.bin/_mocha -- -R spec --recursive",
