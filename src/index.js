@@ -19,4 +19,5 @@ function createApplication(_ROOT) {
 
 exports = module.exports = createApplication;
 exports.Module = require('./module');
+exports.Model = require('./model');
 exports.express = express;
