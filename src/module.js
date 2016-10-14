@@ -32,10 +32,7 @@ export default class Module {
     try {
       return require(this.getRoutesPath());
     } catch (e) {
-      // do nothing, routes is not required
-
-    } finally {
-      // do nothing, routes is not required
+      return false;
     }
   }
 

@@ -25,6 +25,10 @@ expressExtended.baseUrl = function(path) {
   return this._CONFIG.basePath+'/'+path.replace(/^\/|\/$/g, '');
 }
 
+expressExtended.getModules = function() {
+  return this._modules;
+}
+
 expressExtended.getModule = function(name) {
 
   if( !(name in this._modules)) {
@@ -185,11 +189,11 @@ expressExtended._initDB = function(){
 
 expressExtended._initConfig = function() {
   let p = path.join(this._ROOT, 'config.js');
-  if(fs.accessSync(p, fs.constants.F_OK)) {
+  if(!fs.existsSync(p)) {
     throw new Error("You must create config.js in your project root director");
   }
 
-  // @todo validate config
+  // @todo validate config content
   this._CONFIG = require(p);
   this.set('_CONFIG', this._CONFIG);
   this.set('secret', this._CONFIG.secret);
@@ -200,6 +204,10 @@ expressExtended._initRoutes = function() {
   for(var name in this._modules) {
 
     let routes = this._modules[name].getRoutes();
+
+    if(!routes) {
+      continue;
+    }
 
     if(name === this._CONFIG.mainModuleName) {
       this.use('/', routes);
