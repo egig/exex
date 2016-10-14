@@ -17,27 +17,69 @@ import nunjucksModuleLoader from './nunjucks/module-loader';
 
 const expressExtended = express.application;
 
+/**
+ * Load main modules. load config,  initialize modules, etc
+ *
+ * @param String _ROOT
+ * @return undefined
+ */
+expressExtended.load = function load(_ROOT) {
+  this._ROOT = _ROOT;
+  this._models = [];
+  this._modules = [];
+  this._modulePaths =  this.registerModules();
+  this._initConfig();
+  this._initModules();
+  this._boot();
+}
+
+/**
+ * Built in register method, this typiccally will by overrided.
+ *
+ * @return array
+ */
 expressExtended.registerModules = function() {
   return [];
 }
 
+/**
+ * Get baseUrl-prepended given path.
+ *
+ * @param String path
+ * @return string
+ */
 expressExtended.baseUrl = function(path) {
   return this._CONFIG.basePath+'/'+path.replace(/^\/|\/$/g, '');
 }
 
+/**
+ * Return registered modules.
+ *
+ * @return array
+ */
 expressExtended.getModules = function() {
   return this._modules;
 }
 
+/**
+ * Get a module by given name.
+ *
+ * @return object
+ */
 expressExtended.getModule = function(name) {
 
-  if( !(name in this._modules)) {
-    throw Error("Unregistered module: '"+name+"'");
+  if(name in this._modules) {
+    return this._modules[name];
   }
 
-  return this._modules[name];
+  throw new Error("Unregistered module: '"+name+"'");
 }
 
+/**
+ * Acess to model by given name or path.
+ *
+ * @return object
+ */
 expressExtended.model = function(name) {
 
     if(typeof this._models[name] !== 'undefined') {
@@ -64,16 +106,6 @@ expressExtended.model = function(name) {
     this._models[name] = new ModelClass({ knex: knex });
 
     return this._models[name];
-}
-
-expressExtended.load = function load(_ROOT) {
-  this._ROOT = _ROOT;
-  this._models = [];
-  this._modules = [];
-  this._modulePaths =  this.registerModules();
-  this._initConfig();
-  this._initModules();
-  this._boot();
 }
 
 expressExtended._boot = function() {
@@ -135,7 +167,7 @@ expressExtended._initBaseMiddlewares = function() {
   this.use(cookieParser());
   this.use(express.static(path.join(this._ROOT, 'public')));
 
-  this.use(session({ secret: this._CONFIG.secret })); // session secret
+  this.use(session({ secret: this._CONFIG.secret, resave: true, saveUninitialized: true })); // session secret
   this.use(flash()); // use connect-flash for flash messages stored in session
 }
 

@@ -35,7 +35,7 @@ describe('Expressjs Extended', function(){
 
     })
 
-    it('should not throw error on load if config file exists and have one main module', function() {
+    it('should fine if config file exists and have one main module', function() {
 
       expect(function(){
         app.load(__dirname+'/test-config-no-modules');
@@ -45,7 +45,16 @@ describe('Expressjs Extended', function(){
       expect(Object.keys(app.getModules())).length.to.be(1);
 
     })
+  });
 
+  describe('#getModule', function(){
+
+    it('should throw error if unknown module', function() {
+      app.load(__dirname+'/test-config-no-modules');
+      expect(function(){
+        var foo = app.getModule('foo');
+      }).to.throw(Error, /Unregistered module:/);
+    });
   });
 
 });
