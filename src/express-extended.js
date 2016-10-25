@@ -180,21 +180,9 @@ expressExtended._initBaseMiddlewares = function() {
 expressExtended._initViews = function() {
 
   let viewPaths = [this._ROOT+'/views'];
-  this._nunjucksEnv = new nunjucks.Environment(
-      new nunjucksModuleLoader(this._modules, {paths: viewPaths}),
-      {
-          autoescape: false,
-          // throwOnUndefined: true
-      }
-  );
+  let loader = new nunjucksModuleLoader(this._modules, {paths: viewPaths});
+  this._nunjucksEnv = new nunjucks.Environment(loader, { autoescape: false });
   this._nunjucksEnv.express(this);
-  this._nunjucksEnv.addGlobal('__', function(s){
-    // @todo translation
-        return s;
-    })
-  this._nunjucksEnv.addGlobal('isExists', function(el, arr){
-    return arr.indexOf(el) !== -1;
-  })
 
   let _this = this;
   this._nunjucksEnv.addGlobal('baseUrl', function(path) {
@@ -203,7 +191,6 @@ expressExtended._initViews = function() {
 
   this.set('view engine', 'html');
 }
-
 
 expressExtended._initAppLogger = function() {
 
@@ -246,14 +233,7 @@ expressExtended._initRoutes = function() {
       continue;
     }
 
-    if(name === this._CONFIG.mainModuleName) {
-      this.use('/', routes);
-      continue;
-    }
-
-    if(routes) {
-      this.use(this._CONFIG.basePath, routes);
-    }
+    this.use(this._CONFIG.basePath, routes);
   }
 }
 
