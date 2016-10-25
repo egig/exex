@@ -45,6 +45,26 @@ describe('Expressjs Extended', function(){
       expect(Object.keys(app.getModules())).length.to.be(1);
 
     })
+
+    it('shoud have desired library after load', function(){
+
+      app.load(__dirname+'/test-config-no-modules');
+      expect(app.get('knex')).not.to.be.undefined;
+      expect(app.get('db')).not.to.be.undefined;
+      expect(app.get('appLogger')).to.be.instanceof(require('winston').Logger);
+      expect(app.get('view engine')).is.equal('html');
+
+    })
+  });
+
+  describe('#baseUrl', function(){
+
+    it('should return proper result', function(){
+      app.load(__dirname+'/test-config-no-modules');
+      expect(app.baseUrl()).to.contain(app._CONFIG.basePath);
+      expect(app.baseUrl('/some')).to.contain(app._CONFIG.basePath+"/some");
+
+    });
   });
 
   describe('#getModule', function(){

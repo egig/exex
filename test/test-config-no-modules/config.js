@@ -3,14 +3,11 @@ module.exports = {
   secret: "CHANGE THIS PLEASE",
   mainModuleName: "__main",
 
-  // MYSQL
   db : {
-    client: 'mysql',
+    client: 'sqlite3',
     connection: {
-      host     : '127.0.0.1',
-      user     : 'root',
-      password : '',
-      database : 'onlyp'
-    }
+      filename: ":memory:"
+    },
+    useNullAsDefault: true
   }
 }

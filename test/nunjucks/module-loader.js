@@ -1,7 +1,7 @@
 var assert = require('assert');
 var express = require('express');
 
-describe('nunjucks module loader', function(){
+describe('Nunjucks module loader', function(){
     it('should return proper results', function(){
 
         var nunjucksModuleLoader = require('./../../lib/nunjucks/module-loader');

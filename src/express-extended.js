@@ -49,7 +49,12 @@ expressExtended.registerModules = function() {
  * @return string
  */
 expressExtended.baseUrl = function(path) {
-  return this._CONFIG.basePath+'/'+path.replace(/^\/|\/$/g, '');
+
+  if(typeof(path) !== 'undefined') {
+    return this._CONFIG.basePath+'/'+path.replace(/^\/|\/$/g, '');
+  }
+
+  return this._CONFIG.basePath;
 }
 
 /**
