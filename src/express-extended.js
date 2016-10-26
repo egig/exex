@@ -17,18 +17,25 @@ import nunjucksModuleLoader from './nunjucks/module-loader';
 
 const expressExtended = express.application;
 
+expressExtended._DEFAULT_CONFIG = {
+  basePath: '/',
+  db: false,
+  secret: false,
+  mainModuleName: "__main",
+}
+
 /**
  * Load main modules. load config,  initialize modules, etc
  *
  * @param String _ROOT
  * @return undefined
  */
-expressExtended.load = function load(_ROOT) {
+expressExtended.load = function load(_ROOT, config) {
   this._ROOT = _ROOT;
   this._models = [];
   this._modules = [];
   this._modulePaths =  this.registerModules();
-  this._initConfig();
+  this._initConfig(config);
   this._initModules();
   this._boot();
 }
@@ -40,21 +47,6 @@ expressExtended.load = function load(_ROOT) {
  */
 expressExtended.registerModules = function() {
   return [];
-}
-
-/**
- * Get baseUrl-prepended given path.
- *
- * @param String path
- * @return string
- */
-expressExtended.baseUrl = function(path) {
-
-  if(typeof(path) !== 'undefined') {
-    return this._CONFIG.basePath+'/'+path.replace(/^\/|\/$/g, '');
-  }
-
-  return this._CONFIG.basePath;
 }
 
 /**
@@ -183,12 +175,6 @@ expressExtended._initViews = function() {
   let loader = new nunjucksModuleLoader(this._modules, {paths: viewPaths});
   this._nunjucksEnv = new nunjucks.Environment(loader, { autoescape: false });
   this._nunjucksEnv.express(this);
-
-  let _this = this;
-  this._nunjucksEnv.addGlobal('baseUrl', function(path) {
-    return _this.baseUrl(path);
-  });
-
   this.set('view engine', 'html');
 }
 
@@ -211,15 +197,13 @@ expressExtended._initDB = function(){
   this.set('db', knex); // alias
 }
 
-expressExtended._initConfig = function() {
-  let p = path.join(this._ROOT, 'config.js');
-  if(!fs.existsSync(p)) {
-    throw new Error("You must create config.js in your project root director");
-  }
+expressExtended._initConfig = function(config) {
 
-  // @todo validate config content
-  this._CONFIG = require(p);
+  let c = _.merge(this._DEFAULT_CONFIG, config);
+
+  this._CONFIG = c;
   this.set('_CONFIG', this._CONFIG);
+  this.set('config', this._CONFIG);
   this.set('secret', this._CONFIG.secret);
 }
 

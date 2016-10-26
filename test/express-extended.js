@@ -13,7 +13,6 @@ describe('Expressjs Extended', function(){
 
   it('shoud have desired feature', function(){
 
-      expect(app.baseUrl).to.be.a('function');
       expect(app.model).to.be.a('function');
       expect(app.load).to.be.a('function');
       expect(app.getModules).to.be.a('function');
@@ -27,50 +26,43 @@ describe('Expressjs Extended', function(){
 
   describe('#load', function(){
 
-    it('should throw error on load if no config file', function() {
-
-      expect(function(){
-        app.load(__dirname+'/test-no-config')
-      }).to.throw(Error, /You must create config.js/) ;
-
-    })
-
-    it('should fine if config file exists and have one main module', function() {
-
-      expect(function(){
-        app.load(__dirname+'/test-config-no-modules');
-
-      }).not.to.throw(Error, /You must create config.js/) ;
-
-      expect(Object.keys(app.getModules())).length.to.be(1);
-
-    })
-
     it('shoud have desired library after load', function(){
 
-      app.load(__dirname+'/test-config-no-modules');
+      app.load(__dirname+'/test-root-module-with-no-content');
       expect(app.get('knex')).not.to.be.undefined;
       expect(app.get('db')).not.to.be.undefined;
       expect(app.get('appLogger')).to.be.instanceof(require('winston').Logger);
       expect(app.get('view engine')).is.equal('html');
 
     })
-  });
 
-  describe('#baseUrl', function(){
-
-    it('should return proper result', function(){
-      app.load(__dirname+'/test-config-no-modules');
-      expect(app.baseUrl()).to.contain(app._CONFIG.basePath);
-      expect(app.baseUrl('/some')).to.contain(app._CONFIG.basePath+"/some");
-
+    it("should have default config", function(){
+      app.load(__dirname+'/test-root-module-with-no-content');
+      expect(app.get('secret')).to.be.equal(app._DEFAULT_CONFIG.secret);
     });
+
+    it("should override default config", function(){
+      app.load(__dirname+'/test-root-module-with-no-content', {
+        secret: "foo"
+      });
+      expect(app.get('secret')).to.be.equal('foo');
+    });
+
+    it("should load routes on root module", function(){
+      app.load(__dirname+'/test-root-module');
+
+      var r = app.getModule(app.get('config').mainModuleName).getRoutes();
+      var rtest = require(__dirname+'/test-root-module/routes');
+
+      expect(r).to.be.equal(rtest);
+    });
+
   });
 
   describe('#getModule', function(){
 
     it('should throw error if unknown module', function() {
-      app.load(__dirname+'/test-config-no-modules');
+      app.load(__dirname+'/test-root-module-with-no-content');
       expect(function(){
         var foo = app.getModule('foo');
       }).to.throw(Error, /Unregistered module:/);
