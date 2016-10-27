@@ -29,9 +29,6 @@ describe('Expressjs Extended', function(){
     it('shoud have desired library after load', function(){
 
       app.load(__dirname+'/test-root-module-with-no-content');
-      expect(app.get('knex')).not.to.be.undefined;
-      expect(app.get('db')).not.to.be.undefined;
-      expect(app.get('appLogger')).to.be.instanceof(require('winston').Logger);
       expect(app.get('view engine')).is.equal('html');
 
     })

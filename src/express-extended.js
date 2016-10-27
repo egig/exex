@@ -79,35 +79,39 @@ expressExtended.getModule = function(name) {
  */
 expressExtended.model = function(name) {
 
-    if(typeof this._models[name] !== 'undefined') {
-      return this._models[name];
-    }
+  let knex = this.get('db');
 
-    if(name.indexOf('@') === 0) {
-        let tmp = name.split('/');
-        let module = tmp.shift().substr(1);
+  if(typeof knex == 'undefined') {
+    throw new Error("Can not create model without db config");
+  }
 
-        // @todo move this to module manager
-        if(!this._modules[module]) {
-          throw Error("Unregistered module: '"+module+"'");
-        }
-
-        let basePath = this._modules[module].getModelPath();
-        let fName =  tmp.join('/');
-
-        name = path.join(basePath, fName);
-    }
-
-    let ModelClass = require(name);
-    let knex = this.get('db');
-    this._models[name] = new ModelClass({ knex: knex });
-
+  if(typeof this._models[name] !== 'undefined') {
     return this._models[name];
+  }
+
+  if(name.indexOf('@') === 0) {
+      let tmp = name.split('/');
+      let module = tmp.shift().substr(1);
+
+      // @todo move this to module manager
+      if(!this._modules[module]) {
+        throw Error("Unregistered module: '"+module+"'");
+      }
+
+      let basePath = this._modules[module].getModelPath();
+      let fName =  tmp.join('/');
+
+      name = path.join(basePath, fName);
+  }
+
+  let ModelClass = require(name);
+  this._models[name] = new ModelClass({ knex: knex });
+
+  return this._models[name];
 }
 
 expressExtended._boot = function() {
   this._initDB();
-  this._initAppLogger();
   this._initViews();
   this._initBaseMiddlewares();
   this._initStaticMiddlewares();
@@ -164,8 +168,10 @@ expressExtended._initBaseMiddlewares = function() {
   this.use(cookieParser());
   this.use(express.static(path.join(this._ROOT, 'public')));
 
-  this.use(session({ secret: this._CONFIG.secret, resave: true, saveUninitialized: true })); // session secret
-  this.use(flash()); // use connect-flash for flash messages stored in session
+  if(this._CONFIG.secret !== false) {
+    this.use(session({ secret: this._CONFIG.secret, resave: true, saveUninitialized: true })); // session secret
+    this.use(flash()); // use connect-flash for flash messages stored in session
+  }
 }
 
 
@@ -178,20 +184,17 @@ expressExtended._initViews = function() {
   this.set('view engine', 'html');
 }
 
-expressExtended._initAppLogger = function() {
-
-  let winstonKnex = require('./winston/transports/knex')
-
-  let appLogger = new (winston.Logger)({
-    transports: [
-      new (winston.transports.Knex)({ tableName: 'logs', knexInstance: this.get('knex')  })
-    ]
-  });
-
-  this.set('appLogger', appLogger);
-}
-
+/**
+ * Initialize database, we are using knexjs library.
+ *
+ * @return undefined
+ */
 expressExtended._initDB = function(){
+
+  if(!this._CONFIG.db) {
+    return;
+  }
+
   let knex = require('knex')(this._CONFIG.db);
   this.set('knex', knex);
   this.set('db', knex); // alias
