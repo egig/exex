@@ -17,6 +17,9 @@ import nunjucksModuleLoader from './nunjucks/module-loader';
 
 const expressExtended = express.application;
 
+/**
+ * Default config.
+ */
 expressExtended._DEFAULT_CONFIG = {
   basePath: '/',
   db: false,
@@ -110,6 +113,11 @@ expressExtended.model = function(name) {
   return this._models[name];
 }
 
+/**
+ * Boot method, mostly just register required middleware.
+ *
+ * @private
+ */
 expressExtended._boot = function() {
   this._initDB();
   this._initViews();
@@ -126,9 +134,13 @@ expressExtended._boot = function() {
   });
 
   this._initErrorhandler();
-  return true;
 }
 
+/**
+ * Set error handler. No stacktraces leaked to user on production.
+ *
+ * @private
+ */
 expressExtended._initErrorhandler = function() {
   if (this.get('env') === 'development') {
     this.use(function(err, req, res, next) {
@@ -140,8 +152,6 @@ expressExtended._initErrorhandler = function() {
     });
   }
 
-  // production error handler
-  // no stacktraces leaked to user
   this.use(function(err, req, res, next) {
     res.status(err.status || 500);
     res.render('error', {
@@ -151,6 +161,11 @@ expressExtended._initErrorhandler = function() {
   });
 }
 
+/**
+ * We point static /<module_name> to public folder.
+ *
+ * @private
+ */
 expressExtended._initStaticMiddlewares = function() {
   for(var name in this._modules) {
     if(name === this._CONFIG.mainModuleName) {
@@ -161,6 +176,11 @@ expressExtended._initStaticMiddlewares = function() {
   }
 }
 
+/**
+ * Basic requied middlewares.
+ *
+ * @private
+ */
 expressExtended._initBaseMiddlewares = function() {
   this.use(logger('dev'));
   this.use(bodyParser.urlencoded({ extended: true }));
@@ -170,11 +190,15 @@ expressExtended._initBaseMiddlewares = function() {
 
   if(this._CONFIG.secret !== false) {
     this.use(session({ secret: this._CONFIG.secret, resave: true, saveUninitialized: true })); // session secret
-    this.use(flash()); // use connect-flash for flash messages stored in session
+    this.use(flash());
   }
 }
 
-
+/**
+ * Init view engine. We use nunjucks, with special load-from-module ablity.
+ *
+ * @private
+ */
 expressExtended._initViews = function() {
 
   let viewPaths = [this._ROOT+'/views'];
@@ -200,6 +224,11 @@ expressExtended._initDB = function(){
   this.set('db', knex); // alias
 }
 
+/**
+ * Init configuration.
+ *
+ * @private
+ */
 expressExtended._initConfig = function(config) {
 
   let c = _.merge(this._DEFAULT_CONFIG, config);
@@ -210,6 +239,12 @@ expressExtended._initConfig = function(config) {
   this.set('secret', this._CONFIG.secret);
 }
 
+
+/**
+ * Register routes from modules.
+ *
+ * @private
+ */
 expressExtended._initRoutes = function() {
   // @todo add route priority options
   for(var name in this._modules) {
@@ -224,6 +259,12 @@ expressExtended._initRoutes = function() {
   }
 }
 
+
+/**
+ * Initialize modules.
+ *
+ * @private
+ */
 expressExtended._initModules = function(){
   let _this = this;
   // create main/fallback module first
