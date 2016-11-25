@@ -202,7 +202,7 @@ expressExtended._initBaseMiddlewares = function() {
 expressExtended._initViews = function() {
 
   let viewPaths = [this._ROOT+'/views'];
-  let loader = new nunjucksModuleLoader(this._modules, {paths: viewPaths});
+  let loader = new nunjucksModuleLoader(this, {paths: viewPaths});
   this._nunjucksEnv = new nunjucks.Environment(loader, { autoescape: false });
   this._nunjucksEnv.express(this);
   this.set('view engine', 'html');

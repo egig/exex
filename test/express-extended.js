@@ -1,8 +1,8 @@
-var expect = require('chai').expect;
+const expect = require('chai').expect;
 
 
-var app;
-var ee;
+let app;
+let ee;
 
 beforeEach(function(){
   ee = require('../lib/index');

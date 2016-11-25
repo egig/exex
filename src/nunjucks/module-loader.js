@@ -11,9 +11,16 @@ const existsSync = fs.existsSync || path.existsSync;
 const ModuleLoader = nunjucks.FileSystemLoader.extend({
         async: false,
 
-        init: function(modules, opts) {
+        /**
+         * Class psuedo-contructor.
+         *
+         * @param app ExpressExtended Application Instance.
+         * @param opts array
+         */
+        init: function(app, opts) {
 
-            this.modules = modules;
+            this.modules = app.getModules();
+
             var opts = opts || {};
             var searchPaths = opts.paths || false;
 
