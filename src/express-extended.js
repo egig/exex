@@ -120,6 +120,7 @@ expressExtended.model = function(name) {
  */
 expressExtended._boot = function() {
   this._initDB();
+  this._initAppLogger();
   this._initViews();
   this._initBaseMiddlewares();
   this._initStaticMiddlewares();
@@ -189,7 +190,12 @@ expressExtended._initBaseMiddlewares = function() {
   this.use(express.static(path.join(this._ROOT, 'public')));
 
   if(this._CONFIG.secret !== false) {
-    this.use(session({ secret: this._CONFIG.secret, resave: true, saveUninitialized: true })); // session secret
+    let sessionConfig = {
+      secret: this._CONFIG.secret,
+      resave: true,
+      saveUninitialized: true
+    }
+    this.use(session(sessionConfig));
     this.use(flash());
   }
 }
@@ -297,6 +303,24 @@ expressExtended._initModules = function(){
     // @todo validate name
     this._modules[m.getName()] = m;
   }
+}
+
+/**
+ * Create app logger. We user knex transport if knex defined.
+ *
+ * @private
+ */
+expressExtended._initAppLogger = function() {
+
+  let winstonKnex = require('./winston/transports/knex')
+
+  let appLogger =  new (winston.Logger);
+
+  if (this.get('knex')) {
+    appLogger.add(winston.transports.Knex, { tableName: 'logs', knexInstance: this.get('knex')  });
+  }
+
+  this.set('logger', appLogger);
 }
 
 export default expressExtended;
